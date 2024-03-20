@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calcúlame esta :D</title>
     <style>
+        .back-button {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -106,6 +117,7 @@
 </head>
 <body>
     <div class="container">
+        <button class="back-button" onclick="redirectTo('https://guidocalippo.github.io/MisWebs/')">Volver</button>
         <h1><img src="https://davidrodriguezpasteleria.com/wp-content/uploads/2023/09/logo_2.png" alt="Logo" width="220" height="90"/></h1>
         <h1>Calcúlame esta :D</h1>
         <form id="recaudacionForm">
@@ -129,6 +141,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <script>
+        function redirectTo(url) {
+    window.location.href = url;
+  }
         document.getElementById('numEmpleados').addEventListener('input', function() {
             crearTabla();
         });
