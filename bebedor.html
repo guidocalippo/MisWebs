@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Cuántas cervezas puede beber Guido?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.5s;
+    }
+    #title {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+    #container {
+      position: relative;
+      margin-top: 10px;
+      width: 100%;
+      height: 10px; /* Mayor altura para hacerla más gruesa */
+      background-color: #ddd;
+    }
+    #indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 1%;
+      background-color: green; /* Cambiar a verde por defecto */
+    }
+    #face {
+      width: 300px;
+      height: 300px;
+      margin: auto;
+      margin-top: 20px; /* Alinear la foto con la barra */
+      display: block;
+    }
+    #beerCount {
+      font-size: 36px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">¿Cuántas cervezas puede beber Guido?</h1>
+  <img id="face" src="C:\Users\Guido\Desktop\cara.jpeg" alt="Tu cara"> <!-- Mover la foto arriba -->
+  <div id="container" onmousedown="startDrag(event)" onmouseup="stopDrag()">
+    <div id="indicator"></div>
+  </div>
+  <div id="beerCount">0 cervezas</div>
+
+  <script>
+    const indicator = document.getElementById('indicator');
+    const container = document.getElementById('container');
+    const body = document.body;
+    const beerCountElement = document.getElementById('beerCount');
+
+    let isDragging = false;
+
+    function startDrag(event) {
+      isDragging = true;
+      dragIndicator(event);
+      document.addEventListener('mousemove', dragIndicator);
+      document.addEventListener('mouseup', stopDrag);
+    }
+
+    function stopDrag() {
+      isDragging = false;
+      document.removeEventListener('mousemove', dragIndicator);
+      document.removeEventListener('mouseup', stopDrag);
+    }
+
+    function dragIndicator(event) {
+      if (!isDragging) return;
+
+      const containerWidth = container.offsetWidth;
+      const clickX = event.clientX - container.getBoundingClientRect().left;
+      const position = clickX / containerWidth;
+
+      // Cambiar el color de fondo de la página
+      const color = `rgb(${position * 255}, ${255 - position * 255}, 0)`; // Invertir colores
+      body.style.backgroundColor = color;
+      
+      // Mover el indicador
+      indicator.style.width = `${position * 100}%`;
+
+      // Actualizar el número de cervezas
+      const beers = Math.round(position * 100);
+      beerCountElement.innerText = `${beers} cervezas`;
+    }
+  </script>
+</body>
+</html>
