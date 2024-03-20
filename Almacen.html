@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Almacén</title>
+   <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333; /* Cambia el color de texto a oscuro */
+    }
+    .container {
+      max-width: 90%; /* Ajusta el ancho máximo de la página */
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .section {
+      display: inline-block;
+      width: calc(25% - 10px);
+      margin-bottom: 20px;
+      vertical-align: top;
+    }
+    .section h3 {
+      margin-top: 0;
+    }
+    input[type="number"] {
+      font-size: 16px;
+      width: 50px;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="exportButton">Exportar a Texto</button>
+   <script>
+    document.getElementById('exportButton').addEventListener('click', function() {
+      var exportText = '';
+
+      // Obtener las secciones superiores y agregarlas al texto de exportación
+      var sections = document.querySelectorAll('.section');
+      sections.forEach(function(section) {
+        var sectionName = section.querySelector('h3').textContent.trim();
+        var sectionQuantity = section.querySelector('input[type="number"]').value.trim();
+        exportText += sectionName + ': ' + sectionQuantity + '\n';
+      });
+
+      // Obtener todas las filas de la tabla y agregarlas al texto de exportación
+      var rows = document.querySelectorAll('#productTableBody tr');
+      rows.forEach(function(row) {
+        var name = row.cells[1].textContent.trim(); // Nombre del producto en la segunda celda
+        var quantityCell = row.cells[2];
+        var quantity = '0';
+        if (quantityCell.querySelector('input[type="number"]')) {
+          quantity = quantityCell.querySelector('input[type="number"]').value.trim(); // Cantidad en el input dentro de la tercera celda
+        } else {
+          quantity = quantityCell.textContent.trim(); // Si no hay input, se toma el texto directamente
+        }
+        exportText += name + ': ' + quantity + '\n';
+      });
+
+      // Crear un enlace de descarga para el archivo de texto
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(exportText));
+      element.setAttribute('download', 'inventario.txt');
+
+      // Ocultar el enlace y hacer clic en él para descargar el archivo
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    });
+  </script>
+  <!-- Apartados -->
+  <div class="container">
+    <div class="section">
+      <h3>Cajas Grandes</h3>
+      <input type="number" inputmode="numeric" min="0" max="20" value="0">
+    </div>
+    <div class="section">
+      <h3>Cajas Pequeñas</h3>
+      <input type="number" inputmode="numeric" min="0" max="20" value="0">
+    </div>
+    <div class="section">
+      <h3>Cajas Heinecken</h3>
+      <input type="number" inputmode="numeric" min="0" max="20" value="0">
+    </div>
+    <div class="section">
+      <h3>Barriles vacios</h3>
+      <input type="number" inputmode="numeric" min="0" max="20" value="0">
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <td></td>
+        <td>Nombre</td>
+        <td>Cantidad</td>
+      </tr>
+    </thead>
+    <tbody id="productTableBody">
+      <tr>
+        <td><img src="https://brandemia.org/sites/default/files/inline/images/cruzcampo_logo_portada.jpg" alt="Especiales" width="90px" height="40px"></td>
+        <td>Especiales</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.disfrutabox.com/upload/images/brands/cruzcampo-grande.jpg" alt="Gran Reserva" width="90px" height="40px"></td>
+        <td>Gran Reserva</td>
+        <td><input type="number" value="2"></td>
+      </tr>
+      <tr>
+        <td><img src="https://assets.untappd.com/site/beer_logos_hd/beer-633449_681c2_hd.jpeg" alt="Radler" width="90px" height="40px"></td>
+        <td>Radler</td>
+        <td><input type="number" value="2"></td>
+      </tr>
+      <tr>
+        <td><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/1200px-Coca-Cola_logo.svg.png" alt="CocaCola" 
+          width="90px" height="40px"></td>
+        <td>CocaCola</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Coca-Cola_Zero_logo_2.svg" alt="CocaCola Zero" width="90px"height="40px"></td>
+        <td>CocaCola Zero</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.coca-cola.com/content/dam/onexp/es/es/brand/nestea/es_nestea_logo_300x180_v1.png" alt="Nestea" 
+          width="100px"height="40px"></td>
+        <td>Nestea</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.lasansi.com/media/items/big/87290-logomarcas-aquarius-naranja.jpg" alt="Aquarius Naranja"width="100px"height="40px" ></td>
+        <td>Aquarius Naranja</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://i1.wp.com/vulcanogrill.es/wp-content/uploads/2021/05/aquariuslimon.jpg?fit=600%2C600&ssl=1" alt="Aquarius Limón" 
+          width="90px"height="40px"></td>
+        <td>Aquarius Limon</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://turbologo.com/articles/wp-content/uploads/2020/02/Fanta-logo.png" alt="Fanta Naranja" width="90px"height="40px"></td>
+        <td>Fanta Naranja</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://i.ytimg.com/vi/uee-CsiwAqs/hqdefault.jpg" alt="Fanta Limón" 
+          width="90px"height="40px"></td>
+        <td>Fanta Limon</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://brandemia.org/contenido/subidas/2022/05/nueva-identidad-visual-de-sprite-2022.png" alt="Sprite" width="90px"height="40px"></td>
+        <td>Sprite</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://m.media-amazon.com/images/S/aplus-media-library-service-media/9d50d02c-b79c-4d00-ab04-25bcbdbd9808.__CR0,0,1940,1200_PT0_SX970_V1___.jpg" alt="Bliss Amarilla" 
+          width="90px"height="40px"></td>
+        <td>Bliss Amarilla</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.delamatadesign.com/wp-content/uploads/2019/12/royal-bliss-detalle-1.jpg" alt="Bliss Roja" width="90px"height="40px"></td>
+        <td>Bliss Roja</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://cloud10.todocoleccion.online/coleccionismo-coca-cola/tc/2019/04/16/21/160182693_tcimg_48943139.jpg" alt="Appletiser" width="90px"height="40px"></td>
+        <td>Appletiser</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://image.jimcdn.com/app/cms/image/transf/none/path/sd4405cb3d180de6b/image/if9bcb968e991ac39/version/1521271922/image.png" alt="Agua" width="90px"height="40px"></td>
+        <td>Agua</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.coca-cola.com/content/dam/onexp/es/es/brand/kristal/es_kristal_logo_180x180.png" alt="Agua con Gas" width="90px"height="40px"></td>
+        <td>Agua con Gas</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://factoriadecerveza.com/wp-content/uploads/2021/02/Heineken-Logo.png" alt="Heinecken" width="90px"height="40px"></td>
+        <td>Heinecken</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.fullmoontrail.es/wp-content/uploads/2020/02/toppng.com-heineken-0-heineken-00-logo-1084x789-1.png" alt="Heinecken 0.0" width="90px"height="40px"></td>
+        <td>Heinecken 0.0</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://seeklogo.com/images/M/mort-subite-logo-0B454089A2-seeklogo.com.png" alt="Mort Subit" width="90px"height="50px"></td>
+        <td>Mort Subit</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.delamatadesign.com/wp-content/uploads/2019/12/1870-1-proyecto-cuadrado-vectorial-2.png" alt="1870" width="90px" height="40px"></td>
+        <td>1870</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.cervecerialouisiana.com/wp-content/uploads/amstel-oro.png" alt="Amstel Oro" width="90px"height="40px"></td>
+        <td>Amstel Oro</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.disfrutabox.com/upload/images/brands/amstel-oro00-grande.jpg" width="90px"
+      height="40px"></td>
+        <td>Amstel 0.0</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://i.colnect.net/f/6015/360/El-Aguila-Sin-Filtrar.jpg" alt="Águila SF" width="90px"height="40px"></td>
+        <td>Aguila SF</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://static.wikia.nocookie.net/logopedia/images/4/4f/Birra_Moretti.png/revision/latest?cb=20200703192838" alt="Moretti" width="90px" height="40px"></td>
+        <td>Moretti</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgtU1iUaKorybIoVfkPvx4yXnKKnzquV9n5LwzeiSP_sdjj5IkpjoZIByJaUaUb2y6hsM0F99UGKw4njOT-0vSAqvUNSS5zPswWOMnslLaAem8CTjfVJGONhrqZWebqYzbC256gd1AdB0U7/s1600/Logo_Paulaner_France.jpg" alt="Paulaner" width="90px"height="40px"></td>
+        <td>Paulaner</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+      <tr>
+        <td><img src="https://www.bodecall.com/images/productores/ladron-de-manzanas-logo.jpg" alt="Ladrón de Manzana" width="90px" height="40px"></td>
+        <td>Ladron de manzana</td>
+        <td><input type="number" value="4"></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
