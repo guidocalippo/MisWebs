@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -295,6 +296,76 @@
                 guardarDatos(); // Guardar datos después de asignar una reserva a una mesa
             });
         });
+        mesas.forEach(mesa => {
+    let isMoving = false;
+
+    // Mover mesas en dispositivos de escritorio
+    mesa.addEventListener('mousedown', (e) => {
+        if (e.target === mesa) {
+            const shiftX = e.clientX - mesa.getBoundingClientRect().left;
+            const shiftY = e.clientY - mesa.getBoundingClientRect().top;
+
+            const moveAt = (pageX, pageY) => {
+                mesa.style.left = pageX - shiftX + 'px';
+                mesa.style.top = pageY - shiftY + 'px';
+            };
+
+            const onMouseMove = (e) => {
+                isMoving = true;
+                moveAt(e.pageX, e.pageY);
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                isMoving = false;
+                guardarDatos(); // Guardar datos después de mover una mesa
+            };
+
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    });
+
+    // Mover mesas en dispositivos móviles
+    mesa.addEventListener('touchstart', (e) => {
+        if (e.target === mesa) {
+            const touch = e.touches[0];
+            const shiftX = touch.clientX - mesa.getBoundingClientRect().left;
+            const shiftY = touch.clientY - mesa.getBoundingClientRect().top;
+
+            const moveAt = (pageX, pageY) => {
+                mesa.style.left = pageX - shiftX + 'px';
+                mesa.style.top = pageY - shiftY + 'px';
+            };
+
+            const onTouchMove = (e) => {
+                const touch = e.touches[0];
+                moveAt(touch.pageX, touch.pageY);
+                isMoving = true;
+            };
+
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+
+            const onTouchEnd = () => {
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
+                isMoving = false;
+                guardarDatos(); // Guardar datos después de mover una mesa
+            };
+
+            document.addEventListener('touchend', onTouchEnd);
+        }
+    });
+
+    // Cambiar estado con doble clic en dispositivos móviles y de escritorio
+    mesa.addEventListener('dblclick', (e) => {
+        if (e.target === mesa && !isMoving) {
+            mostrarMenuEstado(mesa, e.clientX, e.clientY);
+        }
+    });
+});
 
         // Guardar datos en localStorage
         function guardarDatos() {
