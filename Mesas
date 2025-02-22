@@ -1,12 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Deshabilitar zoom -->
     <title>Reserva de Mesas</title>
     <style>
-       @media only screen and (orientation: portrait) {
+        @media only screen and (orientation: portrait) {
             body {
                 transform: rotate(90deg);
                 transform-origin: top left;
@@ -21,6 +20,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
+            overflow: hidden; /* Evitar el desplazamiento vertical */
         }
         .mesas {
             width: 70%;
@@ -30,9 +30,9 @@
             box-sizing: border-box;
         }
         .mesa {
-            width: 100px;
-            height: 100px;
-            border: 1px solid #000;
+            width: 90px;
+            height: 90px;
+            border: 2px solid #000;
             margin: 10px;
             display: flex;
             align-items: center;
@@ -44,6 +44,7 @@
             width: 30%;
             background-color: #e0e0e0;
             padding: 10px;
+            padding-bottom: 4%; /* Ajuste para que el botón sea visible */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -88,6 +89,17 @@
         #añadir-reserva:hover {
             background-color: #45a049;
         }
+        #reset-mesas {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #reset-mesas:hover {
+            background-color: #cc0000;
+        }
         .reserva.ya-vino {
             background-color: lightgreen;
         }
@@ -120,26 +132,52 @@
     <div class="reservas">
         <div id="lista-reservas"></div>
         <button id="añadir-reserva">+ Añadir Reserva</button>
+        <button id="reset-mesas">Reset Mesas</button> <!-- Botón de Reset -->
     </div>
 
     <script>
-        window.addEventListener('orientationchange', function() {
-        if (window.orientation === 0 || window.orientation === 180) {
-            document.body.style.transform = "rotate(90deg)";
-            document.body.style.transformOrigin = "top left";
+        // Bloquear la barra de navegación en dispositivos móviles
+        function lockNavigationBar() {
+            if (window.innerHeight > window.innerWidth) {
+                document.body.style.height = `${window.innerHeight}px`;
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.height = '100vh';
+                document.body.style.overflow = 'hidden';
+            }
         }
-    });
+
+        window.addEventListener('resize', lockNavigationBar);
+        window.addEventListener('orientationchange', lockNavigationBar);
+        lockNavigationBar(); // Llamar a la función al cargar la página
+
         const mesas = document.querySelectorAll('.mesa');
         const listaReservas = document.getElementById('lista-reservas');
         const botonAñadirReserva = document.getElementById('añadir-reserva');
+        const botonResetMesas = document.getElementById('reset-mesas'); // Botón de Reset
 
         // Cargar datos del localStorage al iniciar
         cargarDatos();
 
+        // Función para resetear las mesas a su posición inicial
+        function resetMesas() {
+            mesas.forEach(mesa => {
+                mesa.setAttribute('data-estado', 'libre');
+                mesa.className = 'mesa libre';
+                mesa.innerHTML = mesa.getAttribute('data-nombre');
+                mesa.style.left = ''; // Restablecer posición horizontal
+                mesa.style.top = ''; // Restablecer posición vertical
+            });
+            guardarDatos(); // Guardar los cambios después de resetear
+        }
+
+        // Evento para el botón de Reset
+        botonResetMesas.addEventListener('click', resetMesas);
+
         mesas.forEach(mesa => {
             let isMoving = false;
 
-            // Mover mesas
+            // Mover mesas en dispositivos de escritorio
             mesa.addEventListener('mousedown', (e) => {
                 if (e.target === mesa) {
                     const shiftX = e.clientX - mesa.getBoundingClientRect().left;
@@ -168,7 +206,38 @@
                 }
             });
 
-            // Cambiar estado con doble clic
+            // Mover mesas en dispositivos móviles
+            mesa.addEventListener('touchstart', (e) => {
+                if (e.target === mesa) {
+                    const touch = e.touches[0];
+                    const shiftX = touch.clientX - mesa.getBoundingClientRect().left;
+                    const shiftY = touch.clientY - mesa.getBoundingClientRect().top;
+
+                    const moveAt = (pageX, pageY) => {
+                        mesa.style.left = pageX - shiftX + 'px';
+                        mesa.style.top = pageY - shiftY + 'px';
+                    };
+
+                    const onTouchMove = (e) => {
+                        const touch = e.touches[0];
+                        moveAt(touch.pageX, touch.pageY);
+                        isMoving = true;
+                    };
+
+                    document.addEventListener('touchmove', onTouchMove, { passive: false });
+
+                    const onTouchEnd = () => {
+                        document.removeEventListener('touchmove', onTouchMove);
+                        document.removeEventListener('touchend', onTouchEnd);
+                        isMoving = false;
+                        guardarDatos(); // Guardar datos después de mover una mesa
+                    };
+
+                    document.addEventListener('touchend', onTouchEnd);
+                }
+            });
+
+            // Cambiar estado con doble clic en dispositivos móviles y de escritorio
             mesa.addEventListener('dblclick', (e) => {
                 if (e.target === mesa && !isMoving) {
                     mostrarMenuEstado(mesa, e.clientX, e.clientY);
@@ -310,76 +379,6 @@
                 guardarDatos(); // Guardar datos después de asignar una reserva a una mesa
             });
         });
-        mesas.forEach(mesa => {
-    let isMoving = false;
-
-    // Mover mesas en dispositivos de escritorio
-    mesa.addEventListener('mousedown', (e) => {
-        if (e.target === mesa) {
-            const shiftX = e.clientX - mesa.getBoundingClientRect().left;
-            const shiftY = e.clientY - mesa.getBoundingClientRect().top;
-
-            const moveAt = (pageX, pageY) => {
-                mesa.style.left = pageX - shiftX + 'px';
-                mesa.style.top = pageY - shiftY + 'px';
-            };
-
-            const onMouseMove = (e) => {
-                isMoving = true;
-                moveAt(e.pageX, e.pageY);
-            };
-
-            document.addEventListener('mousemove', onMouseMove);
-
-            const onMouseUp = () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-                isMoving = false;
-                guardarDatos(); // Guardar datos después de mover una mesa
-            };
-
-            document.addEventListener('mouseup', onMouseUp);
-        }
-    });
-
-    // Mover mesas en dispositivos móviles
-    mesa.addEventListener('touchstart', (e) => {
-        if (e.target === mesa) {
-            const touch = e.touches[0];
-            const shiftX = touch.clientX - mesa.getBoundingClientRect().left;
-            const shiftY = touch.clientY - mesa.getBoundingClientRect().top;
-
-            const moveAt = (pageX, pageY) => {
-                mesa.style.left = pageX - shiftX + 'px';
-                mesa.style.top = pageY - shiftY + 'px';
-            };
-
-            const onTouchMove = (e) => {
-                const touch = e.touches[0];
-                moveAt(touch.pageX, touch.pageY);
-                isMoving = true;
-            };
-
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-
-            const onTouchEnd = () => {
-                document.removeEventListener('touchmove', onTouchMove);
-                document.removeEventListener('touchend', onTouchEnd);
-                isMoving = false;
-                guardarDatos(); // Guardar datos después de mover una mesa
-            };
-
-            document.addEventListener('touchend', onTouchEnd);
-        }
-    });
-
-    // Cambiar estado con doble clic en dispositivos móviles y de escritorio
-    mesa.addEventListener('dblclick', (e) => {
-        if (e.target === mesa && !isMoving) {
-            mostrarMenuEstado(mesa, e.clientX, e.clientY);
-        }
-    });
-});
 
         // Guardar datos en localStorage
         function guardarDatos() {
