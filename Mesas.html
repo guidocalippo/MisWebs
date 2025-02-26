@@ -2,166 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Deshabilitar zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reserva de Mesas</title>
     <style>
-        @media only screen and (orientation: portrait) {
-            body {
-                transform: rotate(90deg);
-                transform-origin: top left;
-                height: 100vh;
-                overflow: hidden;
-            }
-        }
-        body {
-            display: flex;
-            flex-direction: row;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden; /* Evitar el desplazamiento vertical */
-        }
-        .mesas {
-            width: 70%;
-            position: relative;
-            background-color: #f0f0f0;
-            padding: 10px;
-            box-sizing: border-box;
-        }
+        /* CSS básico para las mesas */
         .mesa {
             width: 100px;
             height: 100px;
-            border: 1px solid #000;
+            border: 1px solid #ccc;
             margin: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
+            display: inline-block;
+            position: relative;
             cursor: pointer;
+            text-align: center;
         }
-        .reservas {
-            width: 30%;
-            background-color: #e0e0e0;
-            padding: 10px;
-            padding-bottom: 8%; /* Ajuste para que el botón sea visible */
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
+
+        .libre {
+            background-color: #e0f7fa;
         }
+
+        .reservada {
+            background-color: #ffeb3b;
+        }
+
+        /* Estilo para las reservas */
         .reserva {
-            border: 1px solid #000;
-            padding: 10px;
-            margin: 5px;
-            background-color: white;
-            cursor: grab;
+            margin: 10px 0;
+            padding: 5px;
+            background-color: #ffcccc;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .ocupada { background-color: red; }
-        .libre { background-color: green; }
-        .reservada { background-color: yellow; }
-        .menu-estado {
-            position: absolute;
-            background-color: white;
-            border: 1px solid #000;
-            padding: 5px;
-            z-index: 1000;
+
+        .ya-vino {
+            text-decoration: line-through;
         }
-        .menu-estado button {
-            display: block;
-            width: 100%;
-            margin: 2px 0;
-        }
-        #lista-reservas {
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-        #añadir-reserva {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #añadir-reserva:hover {
-            background-color: #45a049;
-        }
-        #reset-mesas {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #reset-mesas:hover {
-            background-color: #cc0000;
-        }
-        .reserva.ya-vino {
-            background-color: lightgreen;
-        }
+
         .eliminar-reserva {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
             cursor: pointer;
-        }
-        .eliminar-reserva:hover {
-            background-color: #cc0000;
+            color: red;
         }
     </style>
 </head>
 <body>
-    <div class="mesas">
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP1">SUP1</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP2">SUP2</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP3">SUP3</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP4">SUP4</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP5">SUP5</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP6">SUP6</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="SUP7">SUP7</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="EXT1">EXT1</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="EXT2">EXT2</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="EXT3">EXT3</div>
-        <div class="mesa libre" data-estado="libre" data-nombre="EXT4">EXT4</div>
+    <!-- Contenedor para las mesas -->
+    <div id="mesas-container">
+        <div class="mesa" data-nombre="Mesa 1">Mesa 1</div>
+        <div class="mesa" data-nombre="Mesa 2">Mesa 2</div>
+        <div class="mesa" data-nombre="Mesa 3">Mesa 3</div>
+        <div class="mesa" data-nombre="Mesa 4">Mesa 4</div>
     </div>
-    <div class="reservas">
+
+    <!-- Contenedor de las reservas -->
+    <div id="reservas-container">
         <div id="lista-reservas"></div>
-        <button id="añadir-reserva">+ Añadir Reserva</button>
-        <button id="reset-mesas">Reset Mesas</button> <!-- Botón de Reset -->
+        <button id="añadir-reserva">Añadir Reserva</button>
+        <button id="reset-mesas">Resetear Mesas</button>
     </div>
-    <!-- Firebase App (esto es necesario para todas las funcionalidades de Firebase) -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Mesas</title>
-</head>
-<body>
-    <!-- Botones y contenido para reservas -->
-    <button id="añadir-reserva">Añadir Reserva</button>
-    <button id="reset-mesas">Resetear Mesas</button>
 
-    <div id="lista-reservas"></div>
-
-    <!-- Mesas que se pueden reservar -->
-    <div class="mesa" data-nombre="Mesa 1"></div>
-    <div class="mesa" data-nombre="Mesa 2"></div>
-
-    <!-- Scripts -->
     <!-- Firebase App -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <!-- Firebase Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+
+    <!-- Script principal -->
     <script type="module">
-        // Importar los módulos necesarios de Firebase (v9+)
+        // Configuración de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-        // Tu configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC5W7h__bkfCMvnBGVXYmo-S8DDkruZqzg",
             authDomain: "reservamesas-bb3c1.firebaseapp.com",
@@ -176,122 +88,51 @@
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const auth = getAuth(app);
 
-        // Selección de elementos del DOM
+        // Selección de elementos DOM
         const mesas = document.querySelectorAll('.mesa');
         const listaReservas = document.getElementById('lista-reservas');
         const botonAñadirReserva = document.getElementById('añadir-reserva');
         const botonResetMesas = document.getElementById('reset-mesas');
 
-        // Cargar datos desde Firebase
+        // Cargar los datos desde Firebase
         function cargarDatos() {
             const mesasRef = ref(database, 'mesas');
-            get(mesasRef).then(snapshot => {
-                const datosMesas = snapshot.val() || [];
-                const datosReservas = snapshot.val() || [];
-
-                // Cargar mesas
-                datosMesas.forEach(dato => {
-                    const mesa = document.querySelector(`.mesa[data-nombre="${dato.nombre}"]`);
-                    if (mesa) {
-                        mesa.setAttribute('data-estado', dato.estado);
-                        mesa.className = `mesa ${dato.estado}`;
-                        mesa.innerHTML = dato.contenido;
-                        mesa.style.left = dato.posicion.left;
-                        mesa.style.top = dato.posicion.top;
-                    }
-                });
-
-                // Cargar reservas
-                datosReservas.forEach(dato => {
-                    const reserva = document.createElement('div');
-                    reserva.className = 'reserva';
-                    if (dato.yaVino) reserva.classList.add('ya-vino');
-                    reserva.innerHTML = `
-                        <span>${dato.texto}</span>
-                        <button class="eliminar-reserva">Eliminar</button>
-                    `;
-                    reserva.draggable = true;
-
-                    // Añadir evento de arrastre
-                    reserva.addEventListener('dragstart', (e) => {
-                        const [nombre, hora] = dato.texto.split(' - ');
-                        e.dataTransfer.setData('text/plain', JSON.stringify({ nombre, hora }));
-                    });
-
-                    // Doble clic para marcar como "ya vino"
-                    reserva.addEventListener('dblclick', () => {
-                        reserva.classList.toggle('ya-vino');
-                        guardarDatos(); // Guardar datos después de marcar como "ya vino"
-                    });
-
-                    // Eliminar reserva
-                    const botonEliminar = reserva.querySelector('.eliminar-reserva');
-                    botonEliminar.addEventListener('click', () => {
-                        const mesaReservada = reserva.querySelector('span').textContent.split(' ')[0];
-                        if (mesaReservada) {
-                            const mesa = document.querySelector(`.mesa[data-nombre="${mesaReservada}"]`);
-                            if (mesa) {
-                                mesa.setAttribute('data-estado', 'libre');
-                                mesa.className = 'mesa libre';
-                                mesa.innerHTML = mesa.getAttribute('data-nombre');
-                            }
+            get(mesasRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const datosMesas = snapshot.val();
+                    datosMesas.forEach(dato => {
+                        const mesa = document.querySelector(`.mesa[data-nombre="${dato.nombre}"]`);
+                        if (mesa) {
+                            mesa.setAttribute('data-estado', dato.estado);
+                            mesa.className = `mesa ${dato.estado}`;
+                            mesa.innerHTML = `${dato.nombre}`;
                         }
-                        reserva.remove();
-                        guardarDatos(); // Guardar datos después de eliminar una reserva
                     });
-
-                    listaReservas.appendChild(reserva);
-                });
+                }
+            }).catch((error) => {
+                console.error("Error al cargar los datos:", error);
             });
         }
 
-        // Función para guardar los datos en Firebase
+        // Función para guardar datos en Firebase
         function guardarDatos() {
             const datosMesas = [];
             mesas.forEach(mesa => {
                 datosMesas.push({
                     nombre: mesa.getAttribute('data-nombre'),
-                    estado: mesa.getAttribute('data-estado'),
-                    contenido: mesa.innerHTML,
-                    posicion: { left: mesa.style.left, top: mesa.style.top }
+                    estado: mesa.getAttribute('data-estado')
                 });
             });
 
-            const datosReservas = [];
-            const reservas = document.querySelectorAll('.reserva');
-            reservas.forEach(reserva => {
-                datosReservas.push({
-                    texto: reserva.querySelector('span').textContent,
-                    yaVino: reserva.classList.contains('ya-vino')
-                });
-            });
-
-            // Guardar los datos en Firebase
-            set(ref(database, 'mesas'), datosMesas);
-            set(ref(database, 'reservas'), datosReservas);
+            const mesasRef = ref(database, 'mesas');
+            set(mesasRef, datosMesas);
         }
 
-        // Resetear las mesas
-        function resetMesas() {
-            mesas.forEach(mesa => {
-                mesa.setAttribute('data-estado', 'libre');
-                mesa.className = 'mesa libre';
-                mesa.innerHTML = mesa.getAttribute('data-nombre');
-                mesa.style.left = ''; // Restablecer posición horizontal
-                mesa.style.top = ''; // Restablecer posición vertical
-            });
-            guardarDatos(); // Guardar los cambios después de resetear
-        }
-
-        // Evento para el botón de Reset
-        botonResetMesas.addEventListener('click', resetMesas);
-
-        // Evento para añadir una nueva reserva
-        botonAñadirReserva.addEventListener('click', () => {
-            const nombre = prompt('Nombre:');
-            const hora = prompt('Hora (formato HH MM, por ejemplo 10 40):');
+        // Función para añadir una nueva reserva
+        function añadirReserva() {
+            const nombre = prompt('Nombre de la reserva:');
+            const hora = prompt('Hora de la reserva (formato HH:MM):');
 
             if (nombre && hora) {
                 const reserva = document.createElement('div');
@@ -300,39 +141,34 @@
                     <span>${nombre} - ${hora}</span>
                     <button class="eliminar-reserva">Eliminar</button>
                 `;
-                reserva.draggable = true;
-
-                // Añadir evento de arrastre
-                reserva.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', JSON.stringify({ nombre, hora }));
-                });
-
-                // Eliminar reserva
-                const botonEliminar = reserva.querySelector('.eliminar-reserva');
-                botonEliminar.addEventListener('click', () => {
-                    const mesaReservada = reserva.querySelector('span').textContent.split(' ')[0];
-                    if (mesaReservada) {
-                        const mesa = document.querySelector(`.mesa[data-nombre="${mesaReservada}"]`);
-                        if (mesa) {
-                            mesa.setAttribute('data-estado', 'libre');
-                            mesa.className = 'mesa libre';
-                            mesa.innerHTML = mesa.getAttribute('data-nombre');
-                        }
-                    }
+                reserva.querySelector('.eliminar-reserva').addEventListener('click', () => {
                     reserva.remove();
-                    guardarDatos(); // Guardar datos después de eliminar una reserva
+                    guardarDatos();
                 });
 
                 listaReservas.appendChild(reserva);
-                guardarDatos(); // Guardar datos después de añadir una reserva
+                guardarDatos();
             }
-        });
+        }
 
-        // Llamar a cargarDatos al cargar la página para sincronizar con Firebase
+        // Función para resetear las mesas
+        function resetMesas() {
+            mesas.forEach(mesa => {
+                mesa.setAttribute('data-estado', 'libre');
+                mesa.className = 'mesa libre';
+                mesa.innerHTML = mesa.getAttribute('data-nombre');
+            });
+            guardarDatos();
+        }
+
+        // Evento para añadir una reserva
+        botonAñadirReserva.addEventListener('click', añadirReserva);
+
+        // Evento para resetear mesas
+        botonResetMesas.addEventListener('click', resetMesas);
+
+        // Cargar los datos al inicio
         cargarDatos();
     </script>
 </body>
 </html>
-
-
-
