@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Deshabilitar zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reserva de Mesas</title>
     <style>
         @media only screen and (orientation: portrait) {
@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            overflow: hidden; /* Evitar el desplazamiento vertical */
+            overflow: hidden;
         }
         .mesas {
             width: 70%;
@@ -44,7 +44,7 @@
             width: 30%;
             background-color: #e0e0e0;
             padding: 10px;
-            padding-bottom: 4%; /* Ajuste para que el botón sea visible */
+            padding-bottom: 4%;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -132,48 +132,113 @@
     <div class="reservas">
         <div id="lista-reservas"></div>
         <button id="añadir-reserva">+ Añadir Reserva</button>
-        <button id="reset-mesas">Reset Mesas</button> <!-- Botón de Reset -->
+        <button id="reset-mesas">Reset Mesas</button>
     </div>
 
-    <script>
-        // Bloquear la barra de navegación en dispositivos móviles
-        function lockNavigationBar() {
-            if (window.innerHeight > window.innerWidth) {
-                document.body.style.height = `${window.innerHeight}px`;
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.height = '100vh';
-                document.body.style.overflow = 'hidden';
-            }
-        }
+    <script type="module">
+        // Importar Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 
-        window.addEventListener('resize', lockNavigationBar);
-        window.addEventListener('orientationchange', lockNavigationBar);
-        lockNavigationBar(); // Llamar a la función al cargar la página
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5W7h__bkfCMvnBGVXYmo-S8DDkruZqzg",
+            authDomain: "reservamesas-bb3c1.firebaseapp.com",
+            projectId: "reservamesas-bb3c1",
+            storageBucket: "reservamesas-bb3c1.firebasestorage.app",
+            messagingSenderId: "818550369679",
+            appId: "1:818550369679:web:d555d70417976812682ffa",
+            measurementId: "G-SM7QF6JEXR",
+            databaseURL: "https://reservamesas-bb3c1-default-rtdb.firebaseio.com/"
+        };
 
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Referencias a los elementos del DOM
         const mesas = document.querySelectorAll('.mesa');
         const listaReservas = document.getElementById('lista-reservas');
         const botonAñadirReserva = document.getElementById('añadir-reserva');
-        const botonResetMesas = document.getElementById('reset-mesas'); // Botón de Reset
+        const botonResetMesas = document.getElementById('reset-mesas');
 
-        // Cargar datos del localStorage al iniciar
-        cargarDatos();
+        // Función para guardar datos en Firebase
+        function guardarDatos() {
+            const datosMesas = [];
+            mesas.forEach(mesa => {
+                datosMesas.push({
+                    nombre: mesa.getAttribute('data-nombre'),
+                    estado: mesa.getAttribute('data-estado'),
+                    contenido: mesa.innerHTML,
+                    posicion: { left: mesa.style.left, top: mesa.style.top }
+                });
+            });
 
-        // Función para resetear las mesas a su posición inicial
-        function resetMesas() {
+            const datosReservas = [];
+            const reservas = document.querySelectorAll('.reserva');
+            reservas.forEach(reserva => {
+                datosReservas.push({
+                    texto: reserva.querySelector('span').textContent,
+                    yaVino: reserva.classList.contains('ya-vino')
+                });
+            });
+
+            // Guardar en Firebase
+            set(ref(database, 'mesas'), datosMesas);
+            set(ref(database, 'reservas'), datosReservas);
+        }
+
+        // Función para cargar datos desde Firebase
+        function cargarDatos() {
+            const mesasRef = ref(database, 'mesas');
+            const reservasRef = ref(database, 'reservas');
+
+            onValue(mesasRef, (snapshot) => {
+                const datosMesas = snapshot.val() || [];
+                datosMesas.forEach(dato => {
+                    const mesa = document.querySelector(`.mesa[data-nombre="${dato.nombre}"]`);
+                    if (mesa) {
+                        mesa.setAttribute('data-estado', dato.estado);
+                        mesa.className = `mesa ${dato.estado}`;
+                        mesa.innerHTML = dato.contenido;
+                        mesa.style.left = dato.posicion.left;
+                        mesa.style.top = dato.posicion.top;
+                    }
+                });
+            });
+
+            onValue(reservasRef, (snapshot) => {
+                const datosReservas = snapshot.val() || [];
+                listaReservas.innerHTML = ''; // Limpiar la lista de reservas
+                datosReservas.forEach(dato => {
+                    const reserva = document.createElement('div');
+                    reserva.className = 'reserva';
+                    if (dato.yaVino) reserva.classList.add('ya-vino');
+                    reserva.innerHTML = `
+                        <span>${dato.texto}</span>
+                        <button class="eliminar-reserva">Eliminar</button>
+                    `;
+                    reserva.draggable = true;
+
+                    // Añadir eventos de arrastre, doble clic, etc.
+                    listaReservas.appendChild(reserva);
+                });
+            });
+        }
+
+        // Evento para el botón de Reset
+        botonResetMesas.addEventListener('click', () => {
             mesas.forEach(mesa => {
                 mesa.setAttribute('data-estado', 'libre');
                 mesa.className = 'mesa libre';
                 mesa.innerHTML = mesa.getAttribute('data-nombre');
-                mesa.style.left = ''; // Restablecer posición horizontal
-                mesa.style.top = ''; // Restablecer posición vertical
+                mesa.style.left = '';
+                mesa.style.top = '';
             });
-            guardarDatos(); // Guardar los cambios después de resetear
-        }
+            guardarDatos(); // Guardar los cambios en Firebase
+        });
 
-        // Evento para el botón de Reset
-        botonResetMesas.addEventListener('click', resetMesas);
-
+        // Mover mesas
         mesas.forEach(mesa => {
             let isMoving = false;
 
@@ -245,14 +310,13 @@
             });
         });
 
+        // Mostrar menú de estado
         function mostrarMenuEstado(mesa, x, y) {
-            // Cerrar cualquier menú abierto previamente
             const menuExistente = document.querySelector('.menu-estado');
             if (menuExistente) {
                 menuExistente.remove();
             }
 
-            // Crear el menú de estado
             const menu = document.createElement('div');
             menu.className = 'menu-estado';
             menu.style.left = `${x}px`;
@@ -276,7 +340,6 @@
 
             document.body.appendChild(menu);
 
-            // Cerrar el menú si se hace clic fuera de él
             const cerrarMenu = (e) => {
                 if (!menu.contains(e.target)) {
                     menu.remove();
@@ -287,24 +350,7 @@
             document.addEventListener('click', cerrarMenu);
         }
 
-        function ordenarReservas() {
-            const reservas = Array.from(listaReservas.children);
-            reservas.sort((a, b) => {
-                const horaA = a.querySelector('span').textContent.split(' - ')[1];
-                const horaB = b.querySelector('span').textContent.split(' - ')[1];
-                return convertirHoraANumero(horaA) - convertirHoraANumero(horaB);
-            });
-
-            // Limpiar y reordenar la lista
-            listaReservas.innerHTML = '';
-            reservas.forEach(reserva => listaReservas.appendChild(reserva));
-        }
-
-        function convertirHoraANumero(hora) {
-            const [horas, minutos] = hora.split(' ').map(Number);
-            return horas * 60 + minutos; // Convertir a minutos desde medianoche
-        }
-
+        // Añadir reserva
         botonAñadirReserva.addEventListener('click', () => {
             const nombre = prompt('Nombre:');
             const hora = prompt('Hora (formato HH MM, por ejemplo 10 40):');
@@ -346,7 +392,6 @@
                 });
 
                 listaReservas.appendChild(reserva);
-                ordenarReservas(); // Ordenar las reservas después de añadir una nueva
                 guardarDatos(); // Guardar datos después de añadir una reserva
             }
         });
@@ -380,92 +425,8 @@
             });
         });
 
-        // Guardar datos en localStorage
-        function guardarDatos() {
-            const datosMesas = [];
-            mesas.forEach(mesa => {
-                datosMesas.push({
-                    nombre: mesa.getAttribute('data-nombre'),
-                    estado: mesa.getAttribute('data-estado'),
-                    contenido: mesa.innerHTML,
-                    posicion: { left: mesa.style.left, top: mesa.style.top }
-                });
-            });
-
-            const datosReservas = [];
-            const reservas = document.querySelectorAll('.reserva');
-            reservas.forEach(reserva => {
-                datosReservas.push({
-                    texto: reserva.querySelector('span').textContent,
-                    yaVino: reserva.classList.contains('ya-vino')
-                });
-            });
-
-            localStorage.setItem('mesas', JSON.stringify(datosMesas));
-            localStorage.setItem('reservas', JSON.stringify(datosReservas));
-        }
-
-        // Cargar datos desde localStorage
-        function cargarDatos() {
-            const datosMesas = JSON.parse(localStorage.getItem('mesas')) || [];
-            const datosReservas = JSON.parse(localStorage.getItem('reservas')) || [];
-
-            // Cargar mesas
-            datosMesas.forEach(dato => {
-                const mesa = document.querySelector(`.mesa[data-nombre="${dato.nombre}"]`);
-                if (mesa) {
-                    mesa.setAttribute('data-estado', dato.estado);
-                    mesa.className = `mesa ${dato.estado}`;
-                    mesa.innerHTML = dato.contenido;
-                    mesa.style.left = dato.posicion.left;
-                    mesa.style.top = dato.posicion.top;
-                }
-            });
-
-            // Cargar reservas
-            datosReservas.forEach(dato => {
-                const reserva = document.createElement('div');
-                reserva.className = 'reserva';
-                if (dato.yaVino) reserva.classList.add('ya-vino');
-                reserva.innerHTML = `
-                    <span>${dato.texto}</span>
-                    <button class="eliminar-reserva">Eliminar</button>
-                `;
-                reserva.draggable = true;
-
-                // Añadir evento de arrastre
-                reserva.addEventListener('dragstart', (e) => {
-                    const [nombre, hora] = dato.texto.split(' - ');
-                    e.dataTransfer.setData('text/plain', JSON.stringify({ nombre, hora }));
-                });
-
-                // Doble clic para marcar como "ya vino"
-                reserva.addEventListener('dblclick', () => {
-                    reserva.classList.toggle('ya-vino');
-                    guardarDatos(); // Guardar datos después de marcar como "ya vino"
-                });
-
-                // Eliminar reserva
-                const botonEliminar = reserva.querySelector('.eliminar-reserva');
-                botonEliminar.addEventListener('click', () => {
-                    const mesaReservada = reserva.querySelector('span').textContent.split(' ')[0];
-                    if (mesaReservada) {
-                        const mesa = document.querySelector(`.mesa[data-nombre="${mesaReservada}"]`);
-                        if (mesa) {
-                            mesa.setAttribute('data-estado', 'libre');
-                            mesa.className = 'mesa libre';
-                            mesa.innerHTML = mesa.getAttribute('data-nombre');
-                        }
-                    }
-                    reserva.remove();
-                    guardarDatos(); // Guardar datos después de eliminar una reserva
-                });
-
-                listaReservas.appendChild(reserva);
-            });
-
-            ordenarReservas(); // Ordenar las reservas después de cargarlas
-        }
+        // Cargar datos al iniciar
+        cargarDatos();
     </script>
 </body>
 </html>
