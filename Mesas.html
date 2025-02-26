@@ -136,10 +136,7 @@
     </div>
 
     <script>
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-analytics.js";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
-        // Bloquear la barra de navegación en dispositivos móviles
+            // Bloquear la barra de navegación en dispositivos móviles
         function lockNavigationBar() {
             if (window.innerHeight > window.innerWidth) {
                 document.body.style.height = `${window.innerHeight}px`;
