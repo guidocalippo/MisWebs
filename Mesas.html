@@ -163,36 +163,33 @@
         const listaReservas = document.getElementById('lista-reservas');
         const botonAñadirReserva = document.getElementById('añadir-reserva');
         const botonResetMesas = document.getElementById('reset-mesas');
+        
         // Función para guardar datos en Firebase
         function guardarDatos() {
-            const datosMesas = [];
+    const datosMesas = [];
     mesas.forEach(mesa => {
         datosMesas.push({
             nombre: mesa.getAttribute('data-nombre'),
             estado: mesa.getAttribute('data-estado'),
             contenido: mesa.innerHTML,
-            posicion: { left: mesa.style.left, top: mesa.style.top }
+            posicion: { left: mesa.style.left || "0px", top: mesa.style.top || "0px" }
         });
     });
 
     const datosReservas = [];
-    const reservas = document.querySelectorAll('.reserva');
-    reservas.forEach(reserva => {
+    document.querySelectorAll('.reserva').forEach(reserva => {
         datosReservas.push({
             texto: reserva.querySelector('span').textContent,
             yaVino: reserva.classList.contains('ya-vino')
         });
     });
 
-    // En lugar de sobrescribir, usamos update()
     update(ref(database, '/'), {
         mesas: datosMesas,
         reservas: datosReservas
-    }).then(() => {
-        console.log("Datos guardados correctamente.");
-    }).catch(error => {
-        console.error("Error al guardar datos:", error);
-    });
+    }).then(() => console.log("Datos guardados en Firebase"))
+      .catch(error => console.error("Error al guardar datos:", error));
+});
 
             // Guardar en Firebase
             set(ref(database, 'mesas'), datosMesas);
@@ -258,67 +255,47 @@
 
         // Mover mesas
         mesas.forEach(mesa => {
-            let isMoving = false;
+    mesa.addEventListener('mousedown', (e) => {
+        e.preventDefault();  // Evita problemas con selección de texto
+        let shiftX = e.clientX - mesa.getBoundingClientRect().left;
+        let shiftY = e.clientY - mesa.getBoundingClientRect().top;
 
-            // Mover mesas en dispositivos de escritorio
-            mesa.addEventListener('mousedown', (e) => {
-                if (e.target === mesa) {
-                    const shiftX = e.clientX - mesa.getBoundingClientRect().left;
-                    const shiftY = e.clientY - mesa.getBoundingClientRect().top;
+        function moverMesa(e) {
+            mesa.style.left = (e.pageX - shiftX) + 'px';
+            mesa.style.top = (e.pageY - shiftY) + 'px';
+        }
 
-                    const moveAt = (pageX, pageY) => {
-                        mesa.style.left = pageX - shiftX + 'px';
-                        mesa.style.top = pageY - shiftY + 'px';
-                    };
+        function soltarMesa() {
+            document.removeEventListener('mousemove', moverMesa);
+            document.removeEventListener('mouseup', soltarMesa);
+            guardarDatos(); // Guardar en Firebase después de mover
+        }
 
-                    const onMouseMove = (e) => {
-                        isMoving = true;
-                        moveAt(e.pageX, e.pageY);
-                    };
+        document.addEventListener('mousemove', moverMesa);
+        document.addEventListener('mouseup', soltarMesa);
+    });
 
-                    document.addEventListener('mousemove', onMouseMove);
+    mesa.addEventListener('touchstart', (e) => {
+        let touch = e.touches[0];
+        let shiftX = touch.clientX - mesa.getBoundingClientRect().left;
+        let shiftY = touch.clientY - mesa.getBoundingClientRect().top;
 
-                    const onMouseUp = () => {
-                        document.removeEventListener('mousemove', onMouseMove);
-                        document.removeEventListener('mouseup', onMouseUp);
-                        isMoving = false;
-                        guardarDatos(); // Guardar datos después de mover una mesa
-                    };
+        function moverMesaTouch(e) {
+            let touch = e.touches[0];
+            mesa.style.left = (touch.pageX - shiftX) + 'px';
+            mesa.style.top = (touch.pageY - shiftY) + 'px';
+        }
 
-                    document.addEventListener('mouseup', onMouseUp);
-                }
-            });
+        function soltarMesaTouch() {
+            document.removeEventListener('touchmove', moverMesaTouch);
+            document.removeEventListener('touchend', soltarMesaTouch);
+            guardarDatos();
+        }
 
-            // Mover mesas en dispositivos móviles
-            mesa.addEventListener('touchstart', (e) => {
-                if (e.target === mesa) {
-                    const touch = e.touches[0];
-                    const shiftX = touch.clientX - mesa.getBoundingClientRect().left;
-                    const shiftY = touch.clientY - mesa.getBoundingClientRect().top;
-
-                    const moveAt = (pageX, pageY) => {
-                        mesa.style.left = pageX - shiftX + 'px';
-                        mesa.style.top = pageY - shiftY + 'px';
-                    };
-
-                    const onTouchMove = (e) => {
-                        const touch = e.touches[0];
-                        moveAt(touch.pageX, touch.pageY);
-                        isMoving = true;
-                    };
-
-                    document.addEventListener('touchmove', onTouchMove, { passive: false });
-
-                    const onTouchEnd = () => {
-                        document.removeEventListener('touchmove', onTouchMove);
-                        document.removeEventListener('touchend', onTouchEnd);
-                        isMoving = false;
-                        guardarDatos(); // Guardar datos después de mover una mesa
-                    };
-
-                    document.addEventListener('touchend', onTouchEnd);
-                }
-            });
+        document.addEventListener('touchmove', moverMesaTouch);
+        document.addEventListener('touchend', soltarMesaTouch);
+    });
+});
 
             // Cambiar estado con doble clic en dispositivos móviles y de escritorio
             mesa.addEventListener('dblclick', (e) => {
@@ -370,78 +347,49 @@
 
         // Añadir reserva
         botonAñadirReserva.addEventListener('click', () => {
-            const nombre = prompt('Nombre:');
-            const hora = prompt('Hora (formato HH MM, por ejemplo 10 40):');
+    const nombre = prompt('Nombre de la reserva:');
+    if (!nombre) return;  // Salir si el usuario cancela
 
-            if (nombre && hora) {
-                const reserva = document.createElement('div');
-                reserva.className = 'reserva';
-                reserva.innerHTML = `
-                    <span>${nombre} - ${hora}</span>
-                    <button class="eliminar-reserva">Eliminar</button>
-                `;
-                reserva.draggable = true;
+    const hora = prompt('Hora de la reserva (HH:MM):');
+    if (!hora) return;  // Salir si el usuario cancela
 
-                // Añadir evento de arrastre
-                reserva.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', JSON.stringify({ nombre, hora }));
-                });
+    const reserva = document.createElement('div');
+    reserva.className = 'reserva';
+    reserva.innerHTML = `
+        <span>${nombre} - ${hora}</span>
+        <button class="eliminar-reserva">Eliminar</button>
+    `;
+    reserva.draggable = true;
 
-                // Doble clic para marcar como "ya vino"
-                reserva.addEventListener('dblclick', () => {
-                    reserva.classList.toggle('ya-vino');
-                    guardarDatos(); // Guardar datos después de marcar como "ya vino"
-                });
-
-                // Eliminar reserva
-                const botonEliminar = reserva.querySelector('.eliminar-reserva');
-                botonEliminar.addEventListener('click', () => {
-                    const mesaReservada = reserva.querySelector('span').textContent.split(' ')[0];
-                    if (mesaReservada) {
-                        const mesa = document.querySelector(`.mesa[data-nombre="${mesaReservada}"]`);
-                        if (mesa) {
-                            mesa.setAttribute('data-estado', 'libre');
-                            mesa.className = 'mesa libre';
-                            mesa.innerHTML = mesa.getAttribute('data-nombre');
-                        }
-                    }
-                    reserva.remove();
-                    guardarDatos(); // Guardar datos después de eliminar una reserva
-                });
-
-                listaReservas.appendChild(reserva);
-                guardarDatos(); // Guardar datos después de añadir una reserva
-            }
-        });
+    listaReservas.appendChild(reserva);
+    guardarDatos();
+});
 
         // Permitir soltar reservas en las mesas
         mesas.forEach(mesa => {
-            mesa.addEventListener('dragover', (e) => {
-                e.preventDefault(); // Permitir soltar
-            });
+    mesa.addEventListener('dragover', (e) => {
+        e.preventDefault(); // Permitir soltar
+    });
 
-            mesa.addEventListener('drop', (e) => {
-                e.preventDefault();
-                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-                const { nombre, hora } = data;
+    mesa.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const { nombre, hora } = data;
 
-                // Cambiar el estado de la mesa a "Reservada"
-                mesa.setAttribute('data-estado', 'reservada');
-                mesa.className = 'mesa reservada';
-                mesa.innerHTML = `${mesa.getAttribute('data-nombre')}<br>Reservado<br>${hora} - ${nombre}`;
+        mesa.setAttribute('data-estado', 'reservada');
+        mesa.className = 'mesa reservada';
+        mesa.innerHTML = `${mesa.getAttribute('data-nombre')}<br>Reservado<br>${hora} - ${nombre}`;
 
-                // Asignar el número de la mesa a la reserva
-                const reservas = document.querySelectorAll('.reserva');
-                reservas.forEach(reserva => {
-                    if (reserva.textContent.includes(`${nombre} - ${hora}`)) {
-                        const span = reserva.querySelector('span');
-                        span.textContent = `${mesa.getAttribute('data-nombre')} ${nombre} - ${hora}`;
-                    }
-                });
-
-                guardarDatos(); // Guardar datos después de asignar una reserva a una mesa
-            });
+        // Actualizar el texto de la reserva en la lista
+        document.querySelectorAll('.reserva').forEach(reserva => {
+            if (reserva.textContent.includes(`${nombre} - ${hora}`)) {
+                reserva.querySelector('span').textContent = `${mesa.getAttribute('data-nombre')} - ${nombre} - ${hora}`;
+            }
         });
+
+        guardarDatos(); // Guardar en Firebase
+    });
+});
 
         // Cargar datos al iniciar
         cargarDatos();
