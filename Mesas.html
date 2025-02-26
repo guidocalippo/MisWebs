@@ -147,18 +147,22 @@
         // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC5W7h__bkfCMvnBGVXYmo-S8DDkruZqzg",
-            authDomain: "reservamesas-bb3c1.firebaseapp.com",
-            projectId: "reservamesas-bb3c1",
-            storageBucket: "reservamesas-bb3c1.firebasestorage.app",
-            messagingSenderId: "818550369679",
-            appId: "1:818550369679:web:d555d70417976812682ffa",
-            measurementId: "G-SM7QF6JEXR",
-            databaseURL: "https://console.firebase.google.com/project/reservamesas-bb3c1/database/reservamesas-bb3c1/data/~2F"
+        authDomain: "reservamesas-bb3c1.firebaseapp.com",
+        databaseURL: "https://reservamesas-bb3c1-default-rtdb.firebaseio.com/",
+        projectId: "reservamesas-bb3c1",
+        storageBucket: "reservamesas-bb3c1.appspot.com",
+        messagingSenderId: "818550369679",
+        appId: "1:818550369679:web:d555d70417976812682ffa",
+        measurementId: "G-SM7QF6JEXR"
+            databaseURL: "https://reservamesas-bb3c1.europe-west1.firebasedatabase.app/"
+                        
         };
+
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        console.log("Firebase inicializado correctamente:", database);
 
         // Referencias a los elementos del DOM
         const mesas = document.querySelectorAll('.mesa');
