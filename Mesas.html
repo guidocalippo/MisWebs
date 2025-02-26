@@ -143,7 +143,7 @@
 <!-- Firebase Authentication (si lo necesitas para autenticación) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
 
-    <script>
+    <script type="module">
             // Bloquear la barra de navegación en dispositivos móviles
         function lockNavigationBar() {
             if (window.innerHeight > window.innerWidth) {
@@ -160,6 +160,12 @@
         lockNavigationBar(); // Llamar a la función al cargar la página
 
         // Configuración de Firebase
+// Importa Firebase y sus servicios de forma modular
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+
+// Tu configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyC5W7h__bkfCMvnBGVXYmo-S8DDkruZqzg",
   authDomain: "reservamesas-bb3c1.firebaseapp.com",
@@ -172,7 +178,9 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
 
 // Obtener referencia a la base de datos
 const database = firebase.database();
