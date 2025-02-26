@@ -157,6 +157,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
+// Verificar si Firebase se inicializó correctamente
+console.log("Firebase App:", app);
+console.log("Firestore DB:", db);
 
 // Seleccionar elementos del DOM
 const mesas = document.querySelectorAll('.mesa');
