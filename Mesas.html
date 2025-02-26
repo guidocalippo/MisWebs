@@ -153,8 +153,8 @@
         storageBucket: "reservamesas-bb3c1.appspot.com",
         messagingSenderId: "818550369679",
         appId: "1:818550369679:web:d555d70417976812682ffa",
-        measurementId: "G-SM7QF6JEXR"
-            databaseURL: "https://reservamesas-bb3c1.europe-west1.firebasedatabase.app/"
+        measurementId: "G-SM7QF6JEXR",
+        databaseURL: "https://reservamesas-bb3c1.europe-west1.firebasedatabase.app/"
                         
         };
 
@@ -169,27 +169,37 @@
         const listaReservas = document.getElementById('lista-reservas');
         const botonAñadirReserva = document.getElementById('añadir-reserva');
         const botonResetMesas = document.getElementById('reset-mesas');
-
+        import { update } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js"; 
         // Función para guardar datos en Firebase
         function guardarDatos() {
             const datosMesas = [];
-            mesas.forEach(mesa => {
-                datosMesas.push({
-                    nombre: mesa.getAttribute('data-nombre'),
-                    estado: mesa.getAttribute('data-estado'),
-                    contenido: mesa.innerHTML,
-                    posicion: { left: mesa.style.left, top: mesa.style.top }
-                });
-            });
+    mesas.forEach(mesa => {
+        datosMesas.push({
+            nombre: mesa.getAttribute('data-nombre'),
+            estado: mesa.getAttribute('data-estado'),
+            contenido: mesa.innerHTML,
+            posicion: { left: mesa.style.left, top: mesa.style.top }
+        });
+    });
 
-            const datosReservas = [];
-            const reservas = document.querySelectorAll('.reserva');
-            reservas.forEach(reserva => {
-                datosReservas.push({
-                    texto: reserva.querySelector('span').textContent,
-                    yaVino: reserva.classList.contains('ya-vino')
-                });
-            });
+    const datosReservas = [];
+    const reservas = document.querySelectorAll('.reserva');
+    reservas.forEach(reserva => {
+        datosReservas.push({
+            texto: reserva.querySelector('span').textContent,
+            yaVino: reserva.classList.contains('ya-vino')
+        });
+    });
+
+    // En lugar de sobrescribir, usamos update()
+    update(ref(database, '/'), {
+        mesas: datosMesas,
+        reservas: datosReservas
+    }).then(() => {
+        console.log("Datos guardados correctamente.");
+    }).catch(error => {
+        console.error("Error al guardar datos:", error);
+    });
 
             // Guardar en Firebase
             set(ref(database, 'mesas'), datosMesas);
@@ -198,41 +208,48 @@
 
         // Función para cargar datos desde Firebase
         function cargarDatos() {
-            const mesasRef = ref(database, 'mesas');
-            const reservasRef = ref(database, 'reservas');
+    const mesasRef = ref(database, 'mesas');
+    const reservasRef = ref(database, 'reservas');
 
-            onValue(mesasRef, (snapshot) => {
-                const datosMesas = snapshot.val() || [];
-                datosMesas.forEach(dato => {
-                    const mesa = document.querySelector(`.mesa[data-nombre="${dato.nombre}"]`);
-                    if (mesa) {
-                        mesa.setAttribute('data-estado', dato.estado);
-                        mesa.className = `mesa ${dato.estado}`;
-                        mesa.innerHTML = dato.contenido;
-                        mesa.style.left = dato.posicion.left;
-                        mesa.style.top = dato.posicion.top;
-                    }
-                });
+    onValue(mesasRef, (snapshot) => {
+        if (snapshot.exists()) { // Verifica si hay datos
+            const datosMesas = snapshot.val();
+            datosMesas.forEach(dato => {
+                const mesa = document.querySelector(`.mesa[data-nombre="${dato.nombre}"]`);
+                if (mesa) {
+                    mesa.setAttribute('data-estado', dato.estado);
+                    mesa.className = `mesa ${dato.estado}`;
+                    mesa.innerHTML = dato.contenido;
+                    mesa.style.left = dato.posicion.left;
+                    mesa.style.top = dato.posicion.top;
+                }
             });
-
-            onValue(reservasRef, (snapshot) => {
-                const datosReservas = snapshot.val() || [];
-                listaReservas.innerHTML = ''; // Limpiar la lista de reservas
-                datosReservas.forEach(dato => {
-                    const reserva = document.createElement('div');
-                    reserva.className = 'reserva';
-                    if (dato.yaVino) reserva.classList.add('ya-vino');
-                    reserva.innerHTML = `
-                        <span>${dato.texto}</span>
-                        <button class="eliminar-reserva">Eliminar</button>
-                    `;
-                    reserva.draggable = true;
-
-                    // Añadir eventos de arrastre, doble clic, etc.
-                    listaReservas.appendChild(reserva);
-                });
-            });
+        } else {
+            console.warn("No hay datos de mesas en Firebase.");
         }
+    });
+
+    onValue(reservasRef, (snapshot) => {
+        listaReservas.innerHTML = ''; // Limpiar la lista de reservas
+        if (snapshot.exists()) { 
+            const datosReservas = snapshot.val();
+            datosReservas.forEach(dato => {
+                const reserva = document.createElement('div');
+                reserva.className = 'reserva';
+                if (dato.yaVino) reserva.classList.add('ya-vino');
+                reserva.innerHTML = `
+                    <span>${dato.texto}</span>
+                    <button class="eliminar-reserva">Eliminar</button>
+                `;
+                reserva.draggable = true;
+                listaReservas.appendChild(reserva);
+            });
+        } else {
+            console.warn("No hay datos de reservas en Firebase.");
+        }
+    });
+}
+
 
         // Evento para el botón de Reset
         botonResetMesas.addEventListener('click', () => {
