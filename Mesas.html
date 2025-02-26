@@ -432,6 +432,17 @@
                 guardarDatos();
             }
         });
+        // Añadir evento de arrastre
+                reserva.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ nombre, hora }));
+                });
+
+                // Doble clic para marcar como "ya vino"
+                reserva.addEventListener('dblclick', () => {
+                    reserva.classList.toggle('ya-vino');
+                    guardarDatos(); // Guardar datos después de marcar como "ya vino"
+                });
+
 
         // Reset mesas
         botonResetMesas.addEventListener('click', () => {
