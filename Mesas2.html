@@ -6,7 +6,7 @@
     <title>Reserva de Mesas</title>
     <style>
         /* Estilos CSS (sin cambios) */
-      @media only screen and (orientation: portrait) {
+        @media only screen and (orientation: portrait) {
             body {
                 transform: rotate(90deg);
                 transform-origin: top left;
@@ -443,6 +443,35 @@
                 mesa.style.top = '';
             });
             guardarDatos();
+        });
+
+        // Permitir soltar reservas en las mesas
+        mesas.forEach(mesa => {
+            mesa.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Permitir soltar
+            });
+
+            mesa.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                const { nombre, hora } = data;
+
+                // Cambiar el estado de la mesa a "Reservada"
+                mesa.setAttribute('data-estado', 'reservada');
+                mesa.className = 'mesa reservada';
+                mesa.innerHTML = `${mesa.getAttribute('data-nombre')}<br>Reservado<br>${hora} - ${nombre}`;
+
+                // Asignar el número de la mesa a la reserva
+                const reservas = document.querySelectorAll('.reserva');
+                reservas.forEach(reserva => {
+                    if (reserva.querySelector('span').textContent.includes(`${nombre} - ${hora}`)) {
+                        const span = reserva.querySelector('span');
+                        span.textContent = `${mesa.getAttribute('data-nombre')} ${nombre} - ${hora}`;
+                    }
+                });
+
+                guardarDatos(); // Guardar los cambios en Firebase
+            });
         });
     </script>
 </body>
